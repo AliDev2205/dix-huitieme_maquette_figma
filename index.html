@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIEFFE - L'art de la création</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            perspective: 1200px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 50px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
+
+        .header.scrolled {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 50px;
+        }
+
+        .menu-btn, .join-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .menu-btn::before, .join-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .menu-btn:hover::before, .join-btn:hover::before {
+            width: 100%;
+        }
+
+        .menu-btn:hover, .join-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+        }
+
+        .logo {
+            text-align: center;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .logo p {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled .logo h1 {
+            font-size: 24px;
+        }
+
+        .header.scrolled .logo p {
+            font-size: 10px;
+        }
+
+        /* Counter */
+        .counter {
+            position: fixed;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            font-size: 48px;
+            font-weight: 300;
+            color: white;
+            transition: all 0.5s ease;
+        }
+
+        .counter.right {
+            left: auto;
+            right: 50px;
+        }
+
+        /* Navigation dots */
+        .nav-dots {
+            position: fixed;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: #7ed321;
+            transform: scale(1.2);
+        }
+
+        .nav-dot::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* Container principal pour les sections */
+        .sections-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            padding-top: 10vh;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        /* Video sections - Effet de cartes empilées */
+        .video-section {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 75vh;
+            width: 85%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-style: preserve-3d;
+            transform: translate(-50%, -50%);
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                        opacity 0.8s ease, 
+                        z-index 0.1s linear;
+            z-index: 1;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            opacity: 0.7;
+        }
+
+        .video-section.active {
+            transform: translate(-50%, -50%) translateZ(0);
+            z-index: 10;
+            opacity: 1;
+            box-shadow: 0 35px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .video-section.prev {
+            transform: translate(-50%, -50%) translateY(-10%) translateZ(-100px);
+            z-index: 5;
+            opacity: 0.8;
+        }
+
+        .video-section.next {
+            transform: translate(-50%, -50%) translateY(10%) translateZ(-200px);
+            z-index: 1;
+        }
+
+        .video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: all 0.5s ease;
+        }
+
+        /* Fallback backgrounds pour les vidéos non chargées */
+        .video-section[data-index="0"] { background: linear-gradient(45deg, #1a1a1a, #333); }
+        .video-section[data-index="1"] { background: linear-gradient(45deg, #2d2d2d, #4a4a4a); }
+        .video-section[data-index="2"] { background: linear-gradient(45deg, #1e3c72, #2a5298); }
+        .video-section[data-index="3"] { background: linear-gradient(45deg, #8B4513, #A0522D); }
+        .video-section[data-index="4"] { background: linear-gradient(45deg, #4B0082, #8A2BE2); }
+        .video-section[data-index="5"] { background: linear-gradient(45deg, #DC143C, #B22222); }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+        }
+
+        .video-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 50px;
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 1s ease 0.3s;
+            margin-top: 10%;
+        }
+
+        .video-section.active .video-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .video-title {
+            font-size: 64px;
+            font-weight: 300;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.8s ease 0.5s;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-section.active .video-title {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .video-title .italic {
+            font-style: italic;
+            color: #7ed321;
+            position: relative;
+        }
+
+        .video-title .italic::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #7ed321;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.8s ease 1s;
+        }
+
+        .video-section.active .video-title .italic::after {
+            transform: scaleX(1);
+        }
+
+        .video-subtitle {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            opacity: 0;
+            margin-top: 20px;
+            transform: translateY(15px);
+            transition: all 0.8s ease 0.7s;
+        }
+
+        .video-section.active .video-subtitle {
+            opacity: 0.9;
+            transform: translateY(0);
+        }
+
+        .prototype-tag {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: all 0.6s ease 0.4s;
+        }
+
+        .video-section.active .prototype-tag {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Scroll progress */
+        .scroll-progress {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 150px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #7ed321;
+            border-radius: 1px;
+            transition: width 0.3s ease;
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+        }
+
+        .scroll-arrow {
+            display: block;
+            margin-top: 10px;
+            font-size: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Card stack effect */
+        .card-stack-indicator {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .card-stack-indicator.hidden {
+            opacity: 0;
+        }
+
+        .stack-icon {
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .video-title {
+                font-size: 48px;
+            }
+            
+            .video-section {
+                width: 90%;
+                height: 70vh;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px 30px;
+            }
+            
+            .counter {
+                left: 20px;
+                font-size: 32px;
+            }
+            
+            .counter.right {
+                right: 20px;
+            }
+            
+            .nav-dots {
+                right: 20px;
+                gap: 10px;
+            }
+            
+            .video-title {
+                font-size: 36px;
+            }
+            
+            .video-content {
+                padding: 0 20px;
+                margin-top: 15%;
+            }
+            
+            .video-subtitle {
+                font-size: 16px;
+            }
+            
+            .video-section {
+                width: 95%;
+                height: 70vh;
+            }
+            
+            .card-stack-indicator {
+                display: none;
+            }
+            
+            .sections-container {
+                padding-top: 15vh;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+            
+            .counter {
+                left: 15px;
+                font-size: 28px;
+            }
+            
+            .counter.right {
+                right: 15px;
+            }
+            
+            .nav-dots {
+                right: 15px;
+                gap: 8px;
+            }
+            
+            .video-title {
+                font-size: 28px;
+            }
+            
+            .video-subtitle {
+                font-size: 14px;
+            }
+            
+            .menu-btn, .join-btn {
+                font-size: 14px;
+                padding: 8px 15px;
+            }
+            
+            .video-section {
+                height: 65vh;
+            }
+            
+            .prototype-tag {
+                top: 15%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="mainHeader">
+        <button class="menu-btn">Menu</button>
+        <div class="logo">
+            <h1>CIEFFE</h1>
+            <p>Milano dal 1985</p>
+        </div>
+        <button class="join-btn">Rejoignez-nous</button>
+    </header>
+
+    <!-- Counter -->
+    <div class="counter" id="counter">01</div>
+    <div class="counter right" id="counterRight">06</div>
+
+    <!-- Navigation dots -->
+    <div class="nav-dots">
+        <div class="nav-dot active" data-section="0"></div>
+        <div class="nav-dot" data-section="1"></div>
+        <div class="nav-dot" data-section="2"></div>
+        <div class="nav-dot" data-section="3"></div>
+        <div class="nav-dot" data-section="4"></div>
+        <div class="nav-dot" data-section="5"></div>
+    </div>
+    
+    <!-- Card stack indicator -->
+    <div class="card-stack-indicator" id="stackIndicator">
+        <div class="stack-icon"></div>
+        
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator" id="scrollIndicator">
+        Défilez pour explorer
+        <span class="scroll-arrow">↓</span>
+    </div>
+
+    <!-- Container pour toutes les sections -->
+    <div class="sections-container">
+        <!-- Video sections -->
+        <section class="video-section active" data-index="0">
+            <img class="video-bg" src="img/about-2.640x0.jpg" alt="">
+            <div class="video-overlay"></div>
+            <div class="prototype-tag">A PROPOS</div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    Design <em>pour</em> la beauté<br>
+                </h2>
+            </div>
+        </section>
+
+        <section class="video-section next" data-index="1">
+            <video class="video-bg" muted loop>
+                <source src="img/culture.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    CULTURE
+                </h2>
+                <p class="video-subtitle">Partenaires dans les rêves</p>
+            </div>
+        </section>
+
+        <section class="video-section next" data-index="2">
+            <video class="video-bg" muted loop>
+                <source src="img/people-2.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    PERSONNES
+                </h2>
+                <p class="video-subtitle">La famille Cieffe</p>
+            </div>
+        </section>
+
+        <section class="video-section next" data-index="3">
+            <video class="video-bg" muted loop>
+                <source src="img/prototyping.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    PROTOTYPAGE
+                </h2>
+                <p class="video-subtitle">L'art de la création de motifs</p>
+            </div>
+        </section>
+
+        <section class="video-section next" data-index="4">
+            <video class="video-bg" muted loop>
+                <source src="img/sustainability.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    DURABILITE
+                </h2>
+                <p class="video-subtitle">Façonner un avenir meilleur</p>
+            </div>
+        </section>
+
+        <section class="video-section next" data-index="5">
+            <video class="video-bg" muted loop>
+                <source src="img/culture.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-content">
+                <h2 class="video-title">
+                    PRODUCTION
+                    
+                </h2>
+                <p class="video-subtitle">Façonner vos idées</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scroll progress -->
+    <div class="scroll-progress">
+        <span>Scroll</span>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 0;
+        const sections = document.querySelectorAll('.video-section');
+        const counter = document.getElementById('counter');
+        const counterRight = document.getElementById('counterRight');
+        const navDots = document.querySelectorAll('.nav-dot');
+        const progressFill = document.getElementById('progressFill');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        const stackIndicator = document.getElementById('stackIndicator');
+        const mainHeader = document.getElementById('mainHeader');
+        
+        let isScrolling = false;
+
+        // Update section transformation and styles
+        function updateSection(index, direction = 'down') {
+            // Remove all classes from all sections
+            sections.forEach((section, i) => {
+                section.classList.remove('active', 'prev', 'next');
+                
+                if (i < index) {
+                    section.classList.add('prev');
+                } else if (i === index) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.add('next');
+                }
+            });
+            
+            // Update navigation dots
+            navDots.forEach(dot => dot.classList.remove('active'));
+            navDots[index].classList.add('active');
+            
+            // Update counters
+            counter.textContent = (index + 1).toString().padStart(2, '0');
+            counterRight.textContent = sections.length.toString().padStart(2, '0');
+            
+            // Update progress
+            const progress = ((index + 1) / sections.length) * 100;
+            progressFill.style.width = progress + '%';
+            
+            // Hide scroll indicator after first scroll
+            if (index > 0) {
+                scrollIndicator.classList.add('hidden');
+            } else {
+                scrollIndicator.classList.remove('hidden');
+            }
+            
+            // Hide stack indicator after first scroll
+            if (index > 0) {
+                stackIndicator.classList.add('hidden');
+            } else {
+                stackIndicator.classList.remove('hidden');
+            }
+            
+            // Update header style on scroll
+            if (index > 0) {
+                mainHeader.classList.add('scrolled');
+            } else {
+                mainHeader.classList.remove('scrolled');
+            }
+            
+            // Video management: play active video, pause others
+            sections.forEach((section, i) => {
+                const video = section.querySelector('video');
+                if (video) {
+                    if (i === index) {
+                        // Small delay to ensure animation completes before playing
+                        setTimeout(() => {
+                            video.play().catch(e => console.log('Autoplay prevented:', e));
+                        }, 400);
+                    } else {
+                        video.pause();
+                        video.currentTime = 0; // Reset video to beginning
+                    }
+                }
+            });
+            
+            currentSection = index;
+        }
+
+        // Handle scroll events
+        function handleScroll(e) {
+            if (isScrolling) return;
+            
+            e.preventDefault();
+            isScrolling = true;
+            
+            const delta = e.deltaY || e.detail || e.wheelDelta;
+            
+            if (delta > 0 && currentSection < sections.length - 1) {
+                // Scroll down - next section comes up
+                currentSection++;
+                updateSection(currentSection, 'down');
+            } else if (delta < 0 && currentSection > 0) {
+                // Scroll up - previous section comes down
+                currentSection--;
+                updateSection(currentSection, 'up');
+            }
+            
+            // Reset scroll lock after animation
+            setTimeout(() => {
+                isScrolling = false;
+            }, 900);
+        }
+
+        // Mouse wheel events
+        window.addEventListener('wheel', handleScroll, { passive: false });
+        window.addEventListener('DOMMouseScroll', handleScroll, { passive: false });
+
+        // Touch events for mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let touchStartTime = 0;
+
+        window.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+            touchStartTime = Date.now();
+        });
+
+        window.addEventListener('touchend', (e) => {
+            if (isScrolling) return;
+            
+            touchEndY = e.changedTouches[0].screenY;
+            const deltaY = touchStartY - touchEndY;
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Minimum swipe distance and maximum time for swipe detection
+            if (Math.abs(deltaY) > 50 && touchDuration < 500) {
+                isScrolling = true;
+                
+                if (deltaY > 0 && currentSection < sections.length - 1) {
+                    // Swipe up - next section
+                    currentSection++;
+                    updateSection(currentSection, 'down');
+                } else if (deltaY < 0 && currentSection > 0) {
+                    // Swipe down - previous section
+                    currentSection--;
+                    updateSection(currentSection, 'up');
+                }
+                
+                setTimeout(() => {
+                    isScrolling = false;
+                }, 900);
+            }
+        });
+
+        // Navigation dots click
+        navDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                if (!isScrolling && index !== currentSection) {
+                    const direction = index > currentSection ? 'down' : 'up';
+                    updateSection(index, direction);
+                }
+            });
+        });
+
+        // Keyboard navigation
+        window.addEventListener('keydown', (e) => {
+            if (isScrolling) return;
+            
+            if (e.key === 'ArrowDown' && currentSection < sections.length - 1) {
+                e.preventDefault();
+                isScrolling = true;
+                currentSection++;
+                updateSection(currentSection, 'down');
+                setTimeout(() => { isScrolling = false; }, 900);
+            } else if (e.key === 'ArrowUp' && currentSection > 0) {
+                e.preventDefault();
+                isScrolling = true;
+                currentSection--;
+                updateSection(currentSection, 'up');
+                setTimeout(() => { isScrolling = false; }, 900);
+            }
+        });
+
+        // Prevent default scroll behavior
+        window.addEventListener('scroll', (e) => {
+            e.preventDefault();
+            window.scrollTo(0, 0);
+        }, { passive: false });
+
+        // Menu functionality
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            alert('Menu clicked - Navigation would open here');
+        });
+
+        document.querySelector('.join-btn').addEventListener('click', () => {
+            alert('Rejoignez-nous clicked - Contact form would open here');
+        });
+
+        // Initialize
+        updateSection(0);
+        
+        // Parallax effect on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth - 0.5;
+            const mouseY = e.clientY / window.innerHeight - 0.5;
+            
+            sections.forEach(section => {
+                if (section.classList.contains('active')) {
+                    section.style.transform = `translate(-50%, -50%) rotateY(${mouseX * 2}deg) rotateX(${mouseY * -2}deg)`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
